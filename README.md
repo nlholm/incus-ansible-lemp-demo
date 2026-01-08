@@ -1,8 +1,10 @@
 # Automated LEMP Stack & WordPress on Incus (Debian 12)
 
 This project demonstrates an **Infrastructure as Code (IaC)** approach to provisioning a complete web server environment. 
-It uses **Ansible** to automate the configuration of a LEMP stack (Linux, Nginx, MariaDB, PHP) and the deployment of WordPress inside an 
+It uses **Ansible** to automate the configuration of a **LEMP stack** (Linux, Nginx, MariaDB, PHP) and the deployment of **WordPress** inside an 
 **Incus** Linux container running on WSL2.
+
+The environment enables the mass provisioning of isolated development environments with a single command.
 
 ## Architecture & Tech Stack
 
@@ -16,8 +18,10 @@ It uses **Ansible** to automate the configuration of a LEMP stack (Linux, Nginx,
 
 ## Key Features
 
-* **Idempotency:** The playbook can be run multiple times without breaking the system or creating duplicate configurations.
-* **Security First:** * Database credentials are encrypted using **Ansible Vault**.
+* **Idempotency:**
+    * The playbook can be run multiple times without breaking the system or creating duplicate configurations.
+* **Security First:**
+    * Database credentials are encrypted using **Ansible Vault**.
     * Sensitive files (like `info.php`) are automatically removed after verification.
     * Secret files are excluded from version control via `.gitignore`.
 * **Modularity:** The project is split into reusable roles:
@@ -29,23 +33,36 @@ It uses **Ansible** to automate the configuration of a LEMP stack (Linux, Nginx,
 ## Project Structure
 
 ```text
+incus-ansible-lemp-demo
 .
-├── ansible.cfg         # Ansible configuration (Vault path, inventory settings)
-├── inventory.ini       # Server IP definition
-├── site.yml            # Main playbook entry point
-├── group_vars/         # Encrypted variables (DB passwords)
-└── roles/
-    ├── common/         # System tools
-    ├── web/            # Nginx & PHP setup
-    ├── db/             # Database setup
-    └── wordpress/      # WordPress deployment
+├── ansible.cfg                 # Ansible configuration (Vault path, SSH settings)
+├── inventory.ini               # Target server IP addresses
+├── site.yml                    # Main Playbook (entry point)
+├── group_vars/
+│   └── all/
+│       └── vault.yml           # Encrypted secrets (DB passwords)
+├── roles/
+│   ├── common/                 # Base packages (curl, git, micro)
+│   │   └── tasks/main.yml
+│   ├── db/                     # MariaDB setup & DB creation
+│   │   └── tasks/main.yml
+│   ├── web/                    # Nginx & PHP configuration
+│   │   ├── handlers/main.yml   # Restart Nginx/PHP triggers
+│   │   ├── tasks/main.yml
+│   │   └── templates/
+│   │       └── default.j2      # Nginx server block template
+│   └── wordpress/              # WP download & config
+│       ├── tasks/main.yml
+│       └── templates/
+│           └── wp-config.php.j2 # WP configuration template
+└── img/                        # Screenshots for documentation
 ```
 
 ## How to Replicate
 
 ### 1. Prerequisites
 
-* Linux machine or Windows machine with WSL2 enabled.
+* **Linux** machine or Windows machine with WSL2 enabled.
 * **Incus** installed and initialized (`incus admin init`).
 * **Ansible** installed (`sudo apt install ansible`).
 
@@ -58,7 +75,7 @@ cd incus-ansible-lemp-demo
 
 ### 3. Launch the Target Container
 
-Create a Debian 12 container and map the port to localhost:
+Create a Debian 12 container and, if necessary, map the port to localhost:
 
 ```bash
 incus launch images:debian/12 lemp-server
@@ -93,7 +110,7 @@ Create the password file in the project root directory:
 echo "YOUR_VAULT_PASSWORD" > .vault_pass
 ```
 
-Security Note: The .vault_pass file is listed in .gitignore, so your plain-text password will never be pushed to the repository.
+**Security Note**: The .vault_pass file is listed in .gitignore, so your plain-text password will never be pushed to the repository.
 
 ### 6. Run the Playbook
 
@@ -113,8 +130,8 @@ You will see the WordPress installation screen. Once you have set up your creden
 **Concept Clarification: Database vs. Dashboard**
 * **Infrastructure Level:** Ansible automatically configured the connection between WordPress and MariaDB using the secured `wp_user` 
 credential (defined in Ansible Vault). The end user genrally does not need to know or use this password.
-* **Application Level:** The account you create on the "Welcome" screen is your personal **WordPress Admin** user. 
-This is for managing content (posts, themes, plugins) and is separate from the database credentials.
+* **Application Level:** The account you create on the "Welcome" screen is your personal **WordPress Admin** user (http://localhost:8085/wp-admin/). 
+This is for managing users and content (posts, themes, plugins) and is separate from the database credentials.
 
 ![img1](./img/img1.png)
 
@@ -155,33 +172,30 @@ This keeps your main development machine clean and clutter-free.
 
 ```mermaid
 graph TD
-    %% Nodes
-    User([User / Browser])
+    User(User / Browser)
     Ansible{Ansible Automation}
     
-    subgraph WSL2_Host [Windows / WSL2 Host]
-        direction TB
+    subgraph Host [Windows WSL2 Host]
         Proxy[Incus Proxy :8085]
         
-        subgraph Container [Incus Container: lemp-server]
-            direction TB
+        subgraph Container [Incus Container]
             Nginx[Nginx Web Server]
             PHP[PHP-FPM]
-            DB[(MariaDB)]
+            DB[(MariaDB Database)]
             WP[WordPress Files]
         end
     end
 
-    %% Edges / Connections
     User -- "http://localhost:8085" --> Proxy
     Proxy -- "Forward to :80" --> Nginx
     
-    Ansible -- "Provisions & Configures" --> Container
+    Ansible -- "Provisions" --> Container
     
-    %% Internal Container Flow
     Nginx <--> PHP
     PHP <--> DB
     PHP -- Reads/Writes --> WP
-    ```
+```
 
-  ![img1](./img/img2.png)
+![img1](./img/img2.png)
+
+*Image created with Gemini LLM.*

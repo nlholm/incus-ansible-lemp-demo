@@ -1,0 +1,48 @@
+---
+# roles/web/tasks/main.yml
+
+- name: Install Nginx web server
+  apt:
+    name: nginx
+    state: present
+
+- name: Install PHP and FPM (FastCGI Process Manager)
+  # Nginx cannot handle PHP alone; it needs FPM.
+  # We also install extensions required by WordPress (mysql, curl, etc.).
+  apt:
+    name:
+      - php-fpm
+      - php-mysql
+      - php-curl
+      - php-gd
+      - php-mbstring
+      - php-xml
+      - php-zip
+    state: present
+
+- name: Ensure PHP-FPM service is running
+  # Debian 12 uses php8.2-fpm by default
+  service:
+    name: php8.2-fpm
+    state: started
+    enabled: yes
+
+- name: Configure Nginx default site (Enable PHP support)
+  # We use a template to overwrite the default Nginx config.
+  # This tells Nginx to pass .php files to the PHP-FPM processor.
+  template:
+    src: default.j2
+    dest: /etc/nginx/sites-available/default
+  notify: Restart Nginx
+
+- name: Remove PHP test file (Security Best Practice)
+  # We remove info.php because exposing server details is a security risk.
+  file:
+    path: /var/www/html/info.php
+    state: absent
+
+- name: Ensure Nginx service is running
+  service:
+    name: nginx
+    state: started
+    enabled: yes

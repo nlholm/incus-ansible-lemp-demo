@@ -1,0 +1,32 @@
+---
+# roles/common/tasks/main.yml
+
+- name: Update APT package cache
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600  # Do not update if already updated within the last hour
+
+- name: Install common system utilities
+  apt:
+    name:
+      - curl
+      - git
+      - unzip
+      - micro
+      - htop
+      - net-tools  # Provides tools like 'netstat' and 'ifconfig'
+    state: present
+
+- name: Ensure tzdata package is installed
+  apt:
+    name: tzdata
+    state: present
+
+- name: Set timezone to Europe/Helsinki
+  timezone:
+    name: Europe/Helsinki
+
+- name: Set Micro as the default editor
+  alternatives:
+    name: editor
+    path: /usr/bin/micro

@@ -1,0 +1,10 @@
+---
+- name: Configure LEMP Stack Servers
+  hosts: webservers  # Refers to the group defined in inventory.ini
+  become: true       # Important! Execute tasks with root privileges (sudo)
+
+  roles:
+    - common
+    - web
+    - db
+    - wordpress            

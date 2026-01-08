@@ -1,0 +1,34 @@
+---
+# roles/db/tasks/main.yml
+
+- name: Install MariaDB Server and Python library
+  # We need 'python3-pymysql' because Ansible is written in Python.
+  # This library allows Ansible to talk to the MariaDB server to create users/DBs.
+  apt:
+    name:
+      - mariadb-server
+      - python3-pymysql
+    state: present
+
+- name: Ensure MariaDB service is running
+  service:
+    name: mariadb
+    state: started
+    enabled: yes
+
+- name: Create a database for WordPress
+  # This creates a blank database named 'wordpress'
+  community.mysql.mysql_db:
+    name: "{{ vault_db_name }}"
+    state: present
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+
+- name: Create a database user for WordPress
+  # Creates a user 'wp_user' with password 'secretpassword123'
+  # Grants ALL privileges to the 'wordpress' database.
+  community.mysql.mysql_user:
+    name: "{{ vault_db_user }}"  
+    password: "{{ vault_db_pass }}"
+    priv: "{{ vault_db_name }}.*:ALL"
+    state: present
+    login_unix_socket: /var/run/mysqld/mysqld.sock

@@ -1,0 +1,39 @@
+---
+# roles/wordpress/tasks/main.yml
+
+- name: Download WordPress
+  get_url:
+    url: https://wordpress.org/latest.tar.gz
+    dest: /tmp/wordpress.tar.gz
+
+- name: Extract WordPress to /var/www/html
+  unarchive:
+    src: /tmp/wordpress.tar.gz
+    dest: /var/www/html
+    remote_src: yes
+    # 'strip-components=1' is crucial here.
+    # It extracts the CONTENTS of the 'wordpress' folder directly into /var/www/html
+    # instead of creating a subdirectory like /var/www/html/wordpress.
+    extra_opts: ['--strip-components=1']
+    # If file exists, do nothing.
+    creates: /var/www/html/wp-settings.php
+
+- name: Create wp-config.php from template
+  # We use the template we created earlier to inject database credentials automatically.
+  template:
+    src: wp-config.php.j2
+    dest: /var/www/html/wp-config.php
+
+- name: Remove default Nginx index file
+  # We remove 'index.nginx-debian.html' so that 'index.php' (WordPress) takes precedence.
+  file:
+    path: /var/www/html/index.nginx-debian.html
+    state: absent
+
+- name: Set correct permissions
+  # Nginx (user: www-data) needs ownership of the files to handle uploads and updates.
+  file:
+    path: /var/www/html
+    owner: www-data
+    group: www-data
+    recurse: yes

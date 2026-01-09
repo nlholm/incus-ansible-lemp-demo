@@ -147,7 +147,7 @@ This is for managing users and content (posts, themes, plugins) and is separate 
 
 Why choose this Incus + Ansible stack over a traditional LAMP setup?
 
-### 1. Mass Provisioning (The "Factory" Approach)
+### 1. Mass Provisioning
 
 This setup allows you to spin up **multiple** WordPress instances in minutes. By simply launching new Incus containers and adding their IP addresses 
 to `inventory.ini`, Ansible will configure all of them simultaneously.

@@ -120,7 +120,7 @@ Deploy the entire stack with a single command:
 ansible-playbook site.yml
 ```
 
-### 7. Access the site
+### 7. Access the Site
 
 Open your browser and navigate to: http://localhost:8085
 
@@ -195,6 +195,12 @@ graph TD
     PHP <--> DB
     PHP -- Reads/Writes --> WP
 ```
+
+## Conclusion
+
+This project serves as a proof-of-concept for modern, containerized web hosting. By bridging **Incus virtualization** with **Ansible automation**, we move beyond fragile manual configurations to a robust, repeatable **Infrastructure as Code** workflow.
+
+While this demo runs locally, the principles applied here — modularity, security, and idempotency — are the exact same building blocks used in enterprise-grade cloud environments.
 
 ![img1](./img/img2.png)
 

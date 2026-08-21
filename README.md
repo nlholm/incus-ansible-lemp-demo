@@ -9,8 +9,8 @@ The environment enables the mass provisioning of isolated development environmen
 ## Architecture & Tech Stack
 
 * **Host Environment:** WSL2 (Windows Subsystem for Linux) running Debian
-* **Virtualization:** Incus (System Containers)
-* **Automation:** Ansible (Modular Role-based structure)
+* **Virtualization:** Incus (system containers)
+* **Automation:** Ansible (modular role-based structure)
 * **Web Server:** Nginx (configured with Jinja2 templates)
 * **Database:** MariaDB (secured with Ansible Vault)
 * **Scripting:** PHP 8.2-FPM
@@ -129,7 +129,7 @@ You will see the WordPress installation screen. Once you have set up your creden
 
 **Concept Clarification: Database vs. Dashboard**
 * **Infrastructure Level:** Ansible automatically configured the connection between WordPress and MariaDB using the secured `wp_user` 
-credential (defined in Ansible Vault). The end user genrally does not need to know or use this password.
+credential (defined in Ansible Vault). The end user generally does not need to know or use this password.
 * **Application Level:** The account you create on the "Welcome" screen is your personal **WordPress Admin** user (http://localhost:8085/wp-admin/). 
 This is for managing users and content (posts, themes, plugins) and is separate from the database credentials.
 
